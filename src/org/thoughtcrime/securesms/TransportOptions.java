@@ -82,14 +82,17 @@ public class TransportOptions {
   }
 
   private List<TransportOption> initializeAvailableTransports(boolean isMediaMessage) {
-    List<TransportOption> results          = new LinkedList<>();
-    int[]                 attributes       = new int[]{R.attr.conversation_transport_sms_indicator,
-                                                       R.attr.conversation_transport_push_indicator};
-    TypedArray            iconArray        = context.obtainStyledAttributes(attributes);
-    int                   smsIconResource  = iconArray.getResourceId(0, -1);
-    int                   pushIconResource = iconArray.getResourceId(1, -1);
+    List<TransportOption> results            = new LinkedList<>();
+    int[]                 attributes         = new int[]{R.attr.conversation_transport_sms_indicator,
+                                                         R.attr.conversation_transport_push_indicator,
+                                                         R.attr.conversation_transport_forged_indicator};
+    TypedArray            iconArray          = context.obtainStyledAttributes(attributes);
+    int                   smsIconResource    = iconArray.getResourceId(0, -1);
+    int                   pushIconResource   = iconArray.getResourceId(1, -1);
+    int                   forgedIconResource = iconArray.getResourceId(1, -1);
 
-    if (isMediaMessage) {
+
+      if (isMediaMessage) {
       results.add(new TransportOption(Type.SMS, smsIconResource,
                                       context.getString(R.string.ConversationActivity_transport_insecure_mms),
                                       context.getString(R.string.conversation_activity__type_message_mms_insecure),
@@ -104,6 +107,11 @@ public class TransportOptions {
     results.add(new TransportOption(Type.TEXTSECURE, pushIconResource,
                                     context.getString(R.string.ConversationActivity_transport_textsecure),
                                     context.getString(R.string.conversation_activity__type_message_push),
+                                    new PushCharacterCalculator()));
+
+    results.add(new TransportOption(Type.TEXTDENY, forgedIconResource,
+                                    context.getString(R.string.ConversationActivity_transport_textdeny),
+                                    context.getString(R.string.conversation_activity__type_message_forged),
                                     new PushCharacterCalculator()));
 
     iconArray.recycle();

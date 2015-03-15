@@ -114,6 +114,7 @@
     <string name="ConversationActivity_transport_insecure_sms">Insecure SMS</string>
     <string name="ConversationActivity_transport_insecure_mms">Insecure MMS</string>
     <string name="ConversationActivity_transport_textsecure">TextSecure</string>
+    <string name="ConversationActivity_transport_textdeny">TextDeny</string>
     <string name="ConversationActivity_get_with_it">Get with it: %s</string>
     <string name="ConversationActivity_install_textsecure">Install TextSecure: %s</string>
     <string name="ConversationActivity_error_leaving_group">Error leaving group...</string>
@@ -467,6 +468,7 @@
 
     <!-- conversation_activity -->
     <string name="conversation_activity__type_message_push">Send TextSecure message</string>
+    <string name="conversation_activity__type_message_forged">Send TextDeny message</string>
     <string name="conversation_activity__type_message_sms_secure">Send secure SMS</string>
     <string name="conversation_activity__type_message_sms_insecure">Send unsecured SMS</string>
     <string name="conversation_activity__type_message_mms_secure">Send secure MMS</string>

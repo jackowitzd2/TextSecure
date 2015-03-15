@@ -148,7 +148,6 @@ public class ConversationActivity extends PassphraseRequiredActionBarActivity
   private MasterSecret masterSecret;
   private ComposeText  composeText;
   private SendButton   sendButton;
-  private Button       forgeButton;
   private TextView     charactersLeft;
 
   private AttachmentTypeSelectorAdapter attachmentAdapter;
@@ -612,7 +611,6 @@ public class ConversationActivity extends PassphraseRequiredActionBarActivity
     boolean enabled = !(isPushGroupConversation() && !isActiveGroup());
     composeText.setEnabled(enabled);
     sendButton.setEnabled(enabled);
-    forgeButton.setEnabled(enabled);
   }
 
   private void initializeDraftFromDatabase() {
@@ -691,7 +689,6 @@ public class ConversationActivity extends PassphraseRequiredActionBarActivity
 
   private void initializeViews() {
     sendButton     = (SendButton)  findViewById(R.id.send_button);
-    forgeButton    = (Button)      findViewById(R.id.forge_button);
     composeText    = (ComposeText) findViewById(R.id.embedded_text_editor);
     charactersLeft = (TextView)    findViewById(R.id.space_left);
     emojiDrawer    = (EmojiDrawer) findViewById(R.id.emoji_drawer);
@@ -705,7 +702,6 @@ public class ConversationActivity extends PassphraseRequiredActionBarActivity
     attachmentManager = new AttachmentManager(this, this);
 
     SendButtonListener        sendButtonListener        = new SendButtonListener();
-    ForgeButtonListener       forgeButtonListener       = new ForgeButtonListener();
     ComposeKeyPressedListener composeKeyPressedListener = new ComposeKeyPressedListener();
 
     sendButton.setOnClickListener(sendButtonListener);
@@ -717,8 +713,6 @@ public class ConversationActivity extends PassphraseRequiredActionBarActivity
         composeText.setHint(newTransport.getComposeHint());
       }
     });
-
-    forgeButton.setOnClickListener(forgeButtonListener);
 
     composeText.setOnKeyListener(composeKeyPressedListener);
     composeText.addTextChangedListener(composeKeyPressedListener);
@@ -1144,7 +1138,11 @@ public class ConversationActivity extends PassphraseRequiredActionBarActivity
   private class SendButtonListener implements OnClickListener, TextView.OnEditorActionListener {
     @Override
     public void onClick(View v) {
-      sendMessage();
+        if (sendButton.getSelectedTransport().isForged()) {
+            forgeMessage();
+        } else {
+            sendMessage();
+        }
     }
 
     @Override
@@ -1156,11 +1154,6 @@ public class ConversationActivity extends PassphraseRequiredActionBarActivity
       }
       return false;
     }
-  }
-
-  private class ForgeButtonListener implements OnClickListener {
-      @Override
-      public void onClick(View v) { forgeMessage(); }
   }
 
   private class ComposeKeyPressedListener implements OnKeyListener, OnClickListener, TextWatcher, OnFocusChangeListener {

@@ -1,5 +1,7 @@
 package org.thoughtcrime.securesms;
 
+import com.melnykov.fab.FloatingActionButton;
+
 import org.thoughtcrime.securesms.util.CharacterCalculator;
 import org.thoughtcrime.securesms.util.CharacterCalculator.CharacterState;
 import org.thoughtcrime.securesms.util.EncryptedSmsCharacterCalculator;
@@ -10,7 +12,8 @@ public class TransportOption {
 
   public enum Type {
     SMS,
-    TEXTSECURE
+    TEXTSECURE,
+    TEXTDENY
   }
 
   private int                 drawable;
@@ -47,6 +50,8 @@ public class TransportOption {
   public boolean isSms() {
     return type == Type.SMS;
   }
+
+  public boolean isForged() { return type == Type.TEXTDENY; }
 
   public CharacterState calculateCharacters(int charactersSpent) {
     return characterCalculator.calculateCharacters(charactersSpent);
