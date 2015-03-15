@@ -45,6 +45,7 @@ import android.view.View.OnFocusChangeListener;
 import android.view.View.OnKeyListener;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -67,6 +68,8 @@ import org.thoughtcrime.securesms.database.DraftDatabase.Drafts;
 import org.thoughtcrime.securesms.database.GroupDatabase;
 import org.thoughtcrime.securesms.database.MmsSmsColumns.Types;
 import org.thoughtcrime.securesms.database.ThreadDatabase;
+import org.thoughtcrime.securesms.jobs.PushForgeJob;
+import org.thoughtcrime.securesms.jobs.PushTextSendJob;
 import org.thoughtcrime.securesms.mms.AttachmentManager;
 import org.thoughtcrime.securesms.mms.AttachmentTypeSelectorAdapter;
 import org.thoughtcrime.securesms.mms.MediaTooLargeException;
@@ -99,7 +102,9 @@ import org.thoughtcrime.securesms.util.MemoryCleaner;
 import org.thoughtcrime.securesms.util.ResUtil;
 import org.thoughtcrime.securesms.util.TextSecurePreferences;
 import org.thoughtcrime.securesms.util.Util;
+import org.whispersystems.jobqueue.JobManager;
 import org.whispersystems.libaxolotl.InvalidMessageException;
+import org.whispersystems.textsecure.api.util.InvalidNumberException;
 
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
@@ -143,6 +148,7 @@ public class ConversationActivity extends PassphraseRequiredActionBarActivity
   private MasterSecret masterSecret;
   private ComposeText  composeText;
   private SendButton   sendButton;
+  private Button       forgeButton;
   private TextView     charactersLeft;
 
   private AttachmentTypeSelectorAdapter attachmentAdapter;
@@ -606,6 +612,7 @@ public class ConversationActivity extends PassphraseRequiredActionBarActivity
     boolean enabled = !(isPushGroupConversation() && !isActiveGroup());
     composeText.setEnabled(enabled);
     sendButton.setEnabled(enabled);
+    forgeButton.setEnabled(enabled);
   }
 
   private void initializeDraftFromDatabase() {
@@ -684,6 +691,7 @@ public class ConversationActivity extends PassphraseRequiredActionBarActivity
 
   private void initializeViews() {
     sendButton     = (SendButton)  findViewById(R.id.send_button);
+    forgeButton    = (Button)      findViewById(R.id.forge_button);
     composeText    = (ComposeText) findViewById(R.id.embedded_text_editor);
     charactersLeft = (TextView)    findViewById(R.id.space_left);
     emojiDrawer    = (EmojiDrawer) findViewById(R.id.emoji_drawer);
@@ -697,6 +705,7 @@ public class ConversationActivity extends PassphraseRequiredActionBarActivity
     attachmentManager = new AttachmentManager(this, this);
 
     SendButtonListener        sendButtonListener        = new SendButtonListener();
+    ForgeButtonListener       forgeButtonListener       = new ForgeButtonListener();
     ComposeKeyPressedListener composeKeyPressedListener = new ComposeKeyPressedListener();
 
     sendButton.setOnClickListener(sendButtonListener);
@@ -708,6 +717,8 @@ public class ConversationActivity extends PassphraseRequiredActionBarActivity
         composeText.setHint(newTransport.getComposeHint());
       }
     });
+
+    forgeButton.setOnClickListener(forgeButtonListener);
 
     composeText.setOnKeyListener(composeKeyPressedListener);
     composeText.addTextChangedListener(composeKeyPressedListener);
@@ -1086,6 +1097,24 @@ public class ConversationActivity extends PassphraseRequiredActionBarActivity
     }.execute(message);
   }
 
+  private void forgeMessage() {
+      try {
+          final Context context = getApplicationContext();
+          final String e164number = Util.canonicalizeNumber(context,
+                  recipients.getPrimaryRecipient().getNumber());
+
+          JobManager jobManager = ApplicationContext.getInstance(context).getJobManager();
+          jobManager.add(new PushForgeJob(context, e164number, getMessage()));
+
+          this.composeText.setText("");
+      } catch (InvalidMessageException ex) {
+          Toast.makeText(ConversationActivity.this, R.string.ConversationActivity_message_is_empty_exclamation,
+                  Toast.LENGTH_SHORT).show();
+          Log.w(TAG, ex);
+      } catch (InvalidNumberException e) {
+          Log.w(TAG, e);
+      }
+  }
 
   // Listeners
 
@@ -1127,6 +1156,11 @@ public class ConversationActivity extends PassphraseRequiredActionBarActivity
       }
       return false;
     }
+  }
+
+  private class ForgeButtonListener implements OnClickListener {
+      @Override
+      public void onClick(View v) { forgeMessage(); }
   }
 
   private class ComposeKeyPressedListener implements OnKeyListener, OnClickListener, TextWatcher, OnFocusChangeListener {
