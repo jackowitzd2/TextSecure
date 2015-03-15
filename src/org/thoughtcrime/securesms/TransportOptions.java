@@ -89,7 +89,7 @@ public class TransportOptions {
     TypedArray            iconArray          = context.obtainStyledAttributes(attributes);
     int                   smsIconResource    = iconArray.getResourceId(0, -1);
     int                   pushIconResource   = iconArray.getResourceId(1, -1);
-    int                   forgedIconResource = iconArray.getResourceId(1, -1);
+    int                   forgedIconResource = iconArray.getResourceId(2, -1);
 
 
       if (isMediaMessage) {
